@@ -138,3 +138,28 @@
   message: 'Server Running Fine at http://localhost:8080',
   timestamp: '2025-11-14T06:41:11.580Z'
 }
+{
+  level: 'info',
+  message: 'Environment variables loaded from .env file',
+  timestamp: '2025-11-14T06:42:57.360Z'
+}
+{
+  level: 'info',
+  message: 'CORS configured to allow requests from http://localhost:3000',
+  timestamp: '2025-11-14T06:42:57.363Z'
+}
+{
+  level: 'info',
+  message: 'Middleware for JSON and URL-encoded data configured',
+  timestamp: '2025-11-14T06:42:57.364Z'
+}
+{
+  level: 'info',
+  message: 'DB Connection Successful',
+  timestamp: '2025-11-14T06:42:57.977Z'
+}
+{
+  level: 'info',
+  message: 'Server Running Fine at http://localhost:8080',
+  timestamp: '2025-11-14T06:42:57.983Z'
+}
