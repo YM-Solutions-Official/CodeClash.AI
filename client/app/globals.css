@@ -1,26 +1,216 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Base colors */
+  --background: 0 0% 100%;
+  --foreground: 0 0% 9%;
+
+  /* Card & Surface */
+  --card: 0 0% 100%;
+  --card-foreground: 0 0% 9%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 0 0% 9%;
+
+  /* Primary - Yellow/Orange accent */
+  --primary: 43 96% 56%;
+  /* #FDB022 - Vibrant yellow */
+  --primary-foreground: 0 0% 0%;
+  --primary-hover: 43 96% 50%;
+
+  /* Secondary - Light blue */
+  --secondary: 217 91% 90%;
+  --secondary-foreground: 217 91% 20%;
+  --secondary-hover: 217 91% 85%;
+
+  /* Muted - Subtle gray tones */
+  --muted: 0 0% 96%;
+  --muted-foreground: 0 0% 45%;
+
+  /* Accent - Clean white/light gray */
+  --accent: 0 0% 98%;
+  --accent-foreground: 0 0% 9%;
+  --accent-hover: 0 0% 96%;
+
+  /* Destructive */
+  --destructive: 0 72% 51%;
+  --destructive-foreground: 0 0% 100%;
+
+  /* Borders & Inputs */
+  --border: 0 0% 90%;
+  --input: 0 0% 90%;
+  --ring: 43 96% 56%;
+
+  /* Radius */
+  --radius: 0.75rem;
+
+  /* Custom colors from the design */
+  --grid-line: 0 0% 95%;
+  --hover-background: 0 0% 97%;
+  --active-background: 0 0% 93%;
+  --shadow-color: rgba(0, 0, 0, 0.08);
+
+  /* Technology icon colors (optional) */
+  --node-green: 143 80% 45%;
+  --css-blue: 210 100% 56%;
+  --python-blue: 207 51% 44%;
+  --python-yellow: 48 89% 54%;
+  --swift-orange: 14 100% 57%;
+  --sql-blue: 207 87% 66%;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+@theme {
+  /* Font Families */
+  --font-family-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-family-mono: var(--font-geist-mono), ui-monospace, monospace;
+
+  /* Colors - These become Tailwind utilities automatically */
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-primary-hover: hsl(var(--primary-hover));
+
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-secondary-hover: hsl(var(--secondary-hover));
+
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-accent-hover: hsl(var(--accent-hover));
+
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+
+  /* Technology Colors */
+  --color-node: hsl(var(--node-green));
+  --color-css: hsl(var(--css-blue));
+  --color-python-blue: hsl(var(--python-blue));
+  --color-python-yellow: hsl(var(--python-yellow));
+  --color-swift: hsl(var(--swift-orange));
+  --color-sql: hsl(var(--sql-blue));
+
+  /* Border Radius */
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+
+  /* Shadows */
+  --shadow-soft: 0 2px 8px var(--shadow-color);
+  --shadow-medium: 0 4px 16px var(--shadow-color);
+  --shadow-large: 0 8px 32px var(--shadow-color);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+.dark {
+  /* Base colors - Dark mode */
+  --background: 0 0% 5%;
+  --foreground: 0 0% 98%;
+
+  /* Card & Surface */
+  --card: 0 0% 8%;
+  --card-foreground: 0 0% 98%;
+  --popover: 0 0% 8%;
+  --popover-foreground: 0 0% 98%;
+
+  /* Primary - Keep the yellow/orange vibrant */
+  --primary: 43 96% 56%;
+  --primary-foreground: 0 0% 0%;
+  --primary-hover: 43 96% 60%;
+
+  /* Secondary - Dark surface */
+  --secondary: 0 0% 12%;
+  --secondary-foreground: 0 0% 98%;
+  --secondary-hover: 0 0% 15%;
+
+  /* Muted - Dark subtle */
+  --muted: 0 0% 15%;
+  --muted-foreground: 0 0% 65%;
+
+  /* Accent - Darker blue */
+  --accent: 217 91% 25%;
+  --accent-foreground: 217 91% 90%;
+  --accent-hover: 217 91% 30%;
+
+  /* Destructive */
+  --destructive: 0 72% 51%;
+  --destructive-foreground: 0 0% 100%;
+
+  /* Borders & Inputs */
+  --border: 0 0% 20%;
+  --input: 0 0% 20%;
+  --ring: 43 96% 56%;
+
+  /* Custom dark colors */
+  --grid-line: 0 0% 15%;
+  --hover-background: 0 0% 10%;
+  --active-background: 0 0% 15%;
+  --shadow-color: rgba(0, 0, 0, 0.5);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-family: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Apply border color globally */
+* {
+  border-color: hsl(var(--border));
+}
+
+/* Grid background pattern (like in the design) */
+@utility grid-bg {
+  background-image:
+    linear-gradient(to right, hsl(var(--grid-line)) 1px, transparent 1px),
+    linear-gradient(to bottom, hsl(var(--grid-line)) 1px, transparent 1px);
+  background-size: 64px 64px;
+}
+
+/* Smooth transitions */
+* {
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: hsl(var(--muted));
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted-foreground) / 0.3);
+  border-radius: var(--radius);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.5);
+}
+
+/* Selection */
+::selection {
+  background: hsl(var(--primary) / 0.3);
+  color: hsl(var(--foreground));
 }
