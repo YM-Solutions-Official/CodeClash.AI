@@ -1,15 +1,15 @@
-const express = require("express");
-const dotenv = require("dotenv");
-const cors = require("cors");
+import express from "express";
+import dotenv from "dotenv";
+import cors from "cors";
+import cookieParser from "cookie-parser";
 
 // imports
-const logger = require("./src/helper/logger");
-const connectToDB = require("./src/config/database");
-const cookieParser = require("cookie-parser");
-const authRouter = require("./src/routes/authRouter");
-const userRouter = require("./src/routes/userRouter");
-const otpRouter = require("./src/routes/otpRouter");
-const serverListenMessage = require("./src/helper/serverListenMessage");
+import { logger } from "./src/helper/logger";
+import { connectToDB } from "./src/config/database";
+import { otpRouter } from "./src/routes/otpRouter";
+import { authRouter } from "./src/routes/authRouter";
+import { userRouter } from "./src/routes/userRouter";
+import { serverListenMessage } from "./src/helper/serverListenMessage";
 
 const app = express();
 
@@ -40,40 +40,32 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 logger.log({
   level: "info",
-  message: `Middleware for JSON and URL-encoded data configured`,
+  message: `Middleware for Cookie Parsing, JSON, and URL-encoded data configured`,
   timestamp: new Date().toISOString(),
 });
 
 // statically hosting uploads folder
 app.use("/uploads", express.static("uploads"));
 
-// listening to server if it's DB connection Successful
+app.get("/", (req, res) => {
+  return res.end("Server Running....")
+})
+
 connectToDB()
-  .then(() => {
-    app.listen(process.env.PORT, () => {
-      serverListenMessage();
-      logger.log({
-        level: "info",
-        message: `Server Running Fine at ${process.env.ORIGIN_URL}`,
-      });
-    });
-  })
-  .catch((error:any) => {
-    logger.log({
-      level: "error",
-      message: `DB Connection Failed`,
-      error: error,
-    });
-  });
 
 //routes ------------------------->
-
-//USER-ROUTES >>>>>>>>>>>>>>>>>>>>>>>>>>
-
 //auth routes
-app.use("/devconnect/auth", authRouter);
+app.use("/api/auth", authRouter);
 //user routes
-app.use("/devconnect/user", userRouter);
+app.use("/api/user", userRouter);
 // otp routes
-app.use("/devconnect/otp", otpRouter);
+app.use("/api/otp", otpRouter);
 
+
+app.listen(process.env.PORT, () => {
+  serverListenMessage();
+  logger.log({
+    level: "info",
+    message: `Server Running Fine at ${process.env.ORIGIN_URL}`,
+  });
+});

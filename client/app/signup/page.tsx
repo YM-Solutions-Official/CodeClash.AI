@@ -6,10 +6,100 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Code2, Mail, Lock, User, Chrome, Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useAuthStore } from "@/store/useAuthStore";
 
 export default function Signup() {
+    const router = useRouter();
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+    // Zustand store
+    const signup = useAuthStore((state) => state.signup);
+    const signupWithGoogle = useAuthStore((state) => state.signupWithGoogle);
+    const isLoading = useAuthStore((state) => state.isLoading);
+    const error = useAuthStore((state) => state.error);
+    const clearError = useAuthStore((state) => state.clearError);
+
+    // Form state
+    const [formData, setFormData] = useState({
+        name: '',
+        email: '',
+        password: '',
+        confirmPassword: '',
+        agreeToTerms: false,
+    });
+
+    const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+
+    // Password strength calculation
+    const calculatePasswordStrength = (password: string) => {
+        if (password.length === 0) return { strength: 0, label: '' };
+        if (password.length < 6) return { strength: 33, label: 'Weak' };
+        if (password.length < 10) return { strength: 66, label: 'Medium' };
+        return { strength: 100, label: 'Strong' };
+    };
+
+    const passwordStrength = calculatePasswordStrength(formData.password);
+
+    // Form validation
+    const validateForm = () => {
+        const errors: Record<string, string> = {};
+
+        if (formData.name.length < 2) {
+            errors.name = 'Name must be at least 2 characters';
+        }
+
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+            errors.email = 'Please enter a valid email';
+        }
+
+        if (formData.password.length < 8) {
+            errors.password = 'Password must be at least 8 characters';
+        }
+
+        if (formData.password !== formData.confirmPassword) {
+            errors.confirmPassword = 'Passwords do not match';
+        }
+
+        if (!formData.agreeToTerms) {
+            errors.agreeToTerms = 'You must agree to the terms and conditions';
+        }
+
+        setFormErrors(errors);
+        return Object.keys(errors).length === 0;
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        clearError();
+
+        if (!validateForm()) {
+            return;
+        }
+
+        try {
+            await signup({
+                name: formData.name,
+                email: formData.email,
+                password: formData.password,
+            });
+            router.push('/');
+        } catch (error) {
+            // Error is handled in the store
+            console.error('Signup failed:', error);
+        }
+    };
+
+    const handleGoogleSignup = async () => {
+        clearError();
+        try {
+            await signupWithGoogle();
+            router.push('/');
+        } catch (error) {
+            console.error('Google signup failed:', error);
+        }
+    };
 
     return (
         <div className="min-h-screen flex">
@@ -80,15 +170,24 @@ export default function Signup() {
                         </p>
                     </div>
 
-                    <form className="space-y-6">
+                    {/* Error Message */}
+                    {error && (
+                        <div className="mb-6 p-4 rounded-lg bg-destructive/10 border border-destructive/20">
+                            <p className="text-sm text-destructive">{error}</p>
+                        </div>
+                    )}
+
+                    <form onSubmit={handleSubmit} className="space-y-6">
                         {/* Google Sign Up */}
                         <Button
                             type="button"
                             variant="outline"
                             className="w-full py-6 border-2 hover:bg-accent"
+                            onClick={handleGoogleSignup}
+                            disabled={isLoading}
                         >
                             <Chrome className="mr-2 h-5 w-5" />
-                            Sign up with Google
+                            {isLoading ? 'Connecting...' : 'Sign up with Google'}
                         </Button>
 
                         <div className="relative">
@@ -111,8 +210,15 @@ export default function Signup() {
                                     id="name"
                                     placeholder="John Doe"
                                     className="pl-10 py-6"
+                                    value={formData.name}
+                                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                    required
+                                    disabled={isLoading}
                                 />
                             </div>
+                            {formErrors.name && (
+                                <p className="text-sm text-destructive">{formErrors.name}</p>
+                            )}
                         </div>
 
                         {/* Email */}
@@ -125,8 +231,15 @@ export default function Signup() {
                                     type="email"
                                     placeholder="you@example.com"
                                     className="pl-10 py-6"
+                                    value={formData.email}
+                                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                    required
+                                    disabled={isLoading}
                                 />
                             </div>
+                            {formErrors.email && (
+                                <p className="text-sm text-destructive">{formErrors.email}</p>
+                            )}
                         </div>
 
                         {/* Password */}
@@ -139,21 +252,36 @@ export default function Signup() {
                                     type={showPassword ? "text" : "password"}
                                     placeholder="••••••••"
                                     className="pl-10 pr-10 py-6"
+                                    value={formData.password}
+                                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                                    required
+                                    disabled={isLoading}
                                 />
                                 <button
                                     type="button"
                                     onClick={() => setShowPassword(!showPassword)}
                                     className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                                    disabled={isLoading}
                                 >
                                     {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                                 </button>
                             </div>
-                            <div className="h-1 bg-muted rounded-full overflow-hidden">
-                                <div className="h-full bg-primary w-1/3 transition-all" />
-                            </div>
-                            <p className="text-xs text-muted-foreground">
-                                Password strength: Weak (use 8+ characters)
-                            </p>
+                            {formData.password && (
+                                <>
+                                    <div className="h-1 bg-muted rounded-full overflow-hidden">
+                                        <div
+                                            className="h-full bg-primary transition-all"
+                                            style={{ width: `${passwordStrength.strength}%` }}
+                                        />
+                                    </div>
+                                    <p className="text-xs text-muted-foreground">
+                                        Password strength: {passwordStrength.label || 'Enter a password'}
+                                    </p>
+                                </>
+                            )}
+                            {formErrors.password && (
+                                <p className="text-sm text-destructive">{formErrors.password}</p>
+                            )}
                         </div>
 
                         {/* Confirm Password */}
@@ -166,38 +294,58 @@ export default function Signup() {
                                     type={showConfirmPassword ? "text" : "password"}
                                     placeholder="••••••••"
                                     className="pl-10 pr-10 py-6"
+                                    value={formData.confirmPassword}
+                                    onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                                    required
+                                    disabled={isLoading}
                                 />
                                 <button
                                     type="button"
                                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                                     className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                                    disabled={isLoading}
                                 >
                                     {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                                 </button>
                             </div>
+                            {formErrors.confirmPassword && (
+                                <p className="text-sm text-destructive">{formErrors.confirmPassword}</p>
+                            )}
                         </div>
 
                         {/* Terms Checkbox */}
-                        <div className="flex items-start gap-2">
-                            <Checkbox id="terms" className="mt-1" />
-                            <label htmlFor="terms" className="text-sm text-muted-foreground">
-                                I agree to the{" "}
-                                <a href="#" className="text-primary hover:underline">
-                                    Terms and Conditions
-                                </a>{" "}
-                                and{" "}
-                                <a href="#" className="text-primary hover:underline">
-                                    Privacy Policy
-                                </a>
-                            </label>
+                        <div className="space-y-2">
+                            <div className="flex items-start gap-2">
+                                <Checkbox
+                                    id="terms"
+                                    className="mt-1"
+                                    checked={formData.agreeToTerms}
+                                    onCheckedChange={(checked) => setFormData({ ...formData, agreeToTerms: checked as boolean })}
+                                    disabled={isLoading}
+                                />
+                                <label htmlFor="terms" className="text-sm text-muted-foreground">
+                                    I agree to the{" "}
+                                    <Link href="/terms" className="text-primary hover:underline">
+                                        Terms and Conditions
+                                    </Link>{" "}
+                                    and{" "}
+                                    <Link href="/privacy" className="text-primary hover:underline">
+                                        Privacy Policy
+                                    </Link>
+                                </label>
+                            </div>
+                            {formErrors.agreeToTerms && (
+                                <p className="text-sm text-destructive">{formErrors.agreeToTerms}</p>
+                            )}
                         </div>
 
                         {/* Submit Button */}
                         <Button
                             type="submit"
                             className="w-full bg-primary hover:bg-primary-hover text-primary-foreground py-6 text-lg"
+                            disabled={isLoading}
                         >
-                            Create Account
+                            {isLoading ? 'Creating Account...' : 'Create Account'}
                         </Button>
 
                         {/* Login Link */}
@@ -212,4 +360,4 @@ export default function Signup() {
             </div>
         </div>
     );
-};
+}

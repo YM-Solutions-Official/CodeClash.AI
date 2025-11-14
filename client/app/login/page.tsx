@@ -6,9 +6,45 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Code2, Mail, Lock, Chrome, Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useAuthStore } from "@/store/useAuthStore";
 
 export default function Login() {
+    const router = useRouter();
     const [showPassword, setShowPassword] = useState(false);
+
+    const login = useAuthStore((state) => state.login);
+    const loginWithGoogle = useAuthStore((state) => state.loginWithGoogle);
+    const isLoading = useAuthStore((state) => state.isLoading);
+    const error = useAuthStore((state) => state.error);
+    const clearError = useAuthStore((state) => state.clearError);
+
+    const [formData, setFormData] = useState({
+        email: '',
+        password: '',
+    });
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        clearError();
+
+        try {
+            await login(formData.email, formData.password);
+            router.push('/');
+        } catch (error) {
+            console.error('Login failed:', error);
+        }
+    };
+
+    const handleGoogleLogin = async () => {
+        clearError();
+        try {
+            await loginWithGoogle();
+            router.push('/');
+        } catch (error) {
+            console.error('Google login failed:', error);
+        }
+    };
 
     return (
         <div className="min-h-screen flex">
@@ -60,15 +96,24 @@ export default function Login() {
                         </p>
                     </div>
 
-                    <form className="space-y-6">
+                    {/* Error Message */}
+                    {error && (
+                        <div className="mb-6 p-4 rounded-lg bg-destructive/10 border border-destructive/20">
+                            <p className="text-sm text-destructive">{error}</p>
+                        </div>
+                    )}
+
+                    <form onSubmit={handleSubmit} className="space-y-6">
                         {/* Google Sign In */}
                         <Button
                             type="button"
                             variant="outline"
                             className="w-full py-6 border-2 hover:bg-accent"
+                            onClick={handleGoogleLogin}
+                            disabled={isLoading}
                         >
                             <Chrome className="mr-2 h-5 w-5" />
-                            Sign in with Google
+                            {isLoading ? 'Connecting...' : 'Sign in with Google'}
                         </Button>
 
                         <div className="relative">
@@ -92,6 +137,10 @@ export default function Login() {
                                     type="email"
                                     placeholder="you@example.com"
                                     className="pl-10 py-6"
+                                    value={formData.email}
+                                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                    required
+                                    disabled={isLoading}
                                 />
                             </div>
                         </div>
@@ -100,12 +149,12 @@ export default function Login() {
                         <div className="space-y-2">
                             <div className="flex items-center justify-between">
                                 <Label htmlFor="password">Password</Label>
-                                <a
-                                    href="#"
+                                <Link
+                                    href="/forgot-password"
                                     className="text-sm text-primary hover:underline"
                                 >
                                     Forgot password?
-                                </a>
+                                </Link>
                             </div>
                             <div className="relative">
                                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
@@ -114,31 +163,29 @@ export default function Login() {
                                     type={showPassword ? "text" : "password"}
                                     placeholder="••••••••"
                                     className="pl-10 pr-10 py-6"
+                                    value={formData.password}
+                                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                                    required
+                                    disabled={isLoading}
                                 />
                                 <button
                                     type="button"
                                     onClick={() => setShowPassword(!showPassword)}
                                     className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                                    disabled={isLoading}
                                 >
                                     {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                                 </button>
                             </div>
                         </div>
 
-                        {/* Remember Me */}
-                        <div className="flex items-center gap-2">
-                            <Checkbox id="remember" />
-                            <label htmlFor="remember" className="text-sm text-muted-foreground">
-                                Remember me for 30 days
-                            </label>
-                        </div>
-
                         {/* Submit Button */}
                         <Button
                             type="submit"
                             className="w-full bg-primary hover:bg-primary-hover text-primary-foreground py-6 text-lg"
+                            disabled={isLoading}
                         >
-                            Sign In
+                            {isLoading ? 'Signing in...' : 'Sign In'}
                         </Button>
 
                         {/* Signup Link */}
