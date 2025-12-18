@@ -1,6 +1,7 @@
 import { Server, Socket } from "socket.io";
 import RoomModel from "../models/room";
 import { HARDCODED_PROBLEM, ROOM_STATUS } from "../lib/constants";
+import { checkMatchEnd } from "./helper";
 
 export function setupRoomSockets(io: Server) {
   io.on("connection", (socket: Socket) => {
@@ -46,6 +47,11 @@ export function setupRoomSockets(io: Server) {
           timeRemaining = Math.max(0, room.duration - time);
         }
 
+        const isCreator = socket.id === room.creatorId;
+        const hasSubmitted = isCreator
+          ? room.submissions?.creator?.submitted
+          : room.submissions?.joiner?.submitted;
+
         callback({
           users,
           status: room.status,
@@ -54,6 +60,11 @@ export function setupRoomSockets(io: Server) {
           startTime: room.startTime,
           duration: room.duration,
           timeRemaining,
+          hasSubmitted,
+          winner: room.winner,
+          submissions:
+            room.status === ROOM_STATUS.FINISHED ? room.submissions : null,
+          endTime: room.endTime,
         });
       } catch (error) {
         console.error("Get room info error:", error);
@@ -91,6 +102,11 @@ export function setupRoomSockets(io: Server) {
           startTime: room.startTime,
           duration: room.duration,
           timeRemaining,
+          hasSubmitted: false,
+          winner: room.winner,
+          submissions:
+            room.status === ROOM_STATUS.FINISHED ? room.submissions : null,
+          endTime: room.endTime,
         });
 
         console.log(`User ${socket.id} joined room ${roomId}`);
@@ -131,11 +147,88 @@ export function setupRoomSockets(io: Server) {
         io.to(roomId).emit("match_started", matchData);
         callback({ success: true });
         console.log(`Match started in room ${roomId}`);
+
+        setTimeout(() => {
+          checkMatchEnd(io, roomId);
+        }, room.duration * 1000);
       } catch (error) {
         console.error("Start match error:", error);
         callback({ error: "Failed to start match" });
       }
     });
+
+    // Submit Code
+    socket.on("submit_code", async ({ roomId, code }, callback) => {
+      try {
+        const room = await RoomModel.findById(roomId);
+
+        if (!room) return callback({ error: "Room not found" });
+
+        if (room.status !== ROOM_STATUS.ACTIVE) {
+          return callback({ error: "Match is not active" });
+        }
+
+        const isCreator = socket.id === room.creatorId;
+        const isJoiner = socket.id === room.joinedUser;
+
+        if (!isCreator && !isJoiner) {
+          return callback({ error: "You are not in this room" });
+        }
+
+        // Check if already submitted
+        const alreadySubmitted = isCreator 
+          ? room.submissions?.creator?.submitted 
+          : room.submissions?.joiner?.submitted;
+
+        if (alreadySubmitted) {
+          return callback({ error: "You have already submitted" });
+        }
+
+        // Record submission
+        const submissionTime = Date.now();
+        
+       if (!room.submissions) {
+          room.submissions = {
+            creator: { submitted: false },
+            joiner: { submitted: false },
+          };
+        }
+
+        if (isCreator) {
+          room.submissions.creator = {
+            submitted: true,
+            submissionTime,
+            code,
+          };
+        } else {
+          room.submissions.joiner = {
+            submitted: true,
+            submissionTime,
+            code,
+          };
+        }
+
+        await room.save();
+
+        socket.to(roomId).emit("opponent_submitted", { 
+          userId: socket.id 
+        });
+
+        callback({ 
+          success: true,
+          submissionTime,
+        });
+
+        console.log(`User ${socket.id} submitted in room ${roomId}`);
+
+        // Check if match should end
+        await checkMatchEnd(io, roomId);
+
+      } catch (error) {
+        console.error("Submit code error:", error);
+        callback({ error: "Failed to submit code" });
+      }
+    })
 
     socket.on("disconnect", async () => {
       console.log("Client Disconnected", socket.id);

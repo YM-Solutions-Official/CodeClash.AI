@@ -52,6 +52,38 @@ const RoomSchema = new Schema<IRoom>(
     startTime: {
       type: Number,
     },
+    submissions:{
+      creator: {
+        submitted: {
+          type: Boolean,
+          default: false,
+        },
+        submissionTime: {
+          type: Number,
+        },
+        code: {
+          type: String,
+        },
+      },
+      joiner: {
+        submitted: {
+          type: Boolean,
+          default: false,
+        },
+        submissionTime: {
+          type: Number,
+        },
+        code: {
+          type: String,
+        },
+      },
+    },
+    winner: {
+      type: String,
+    },
+    endTime: {
+      type: Number,
+    },
   },
   { timestamps: true }
 );

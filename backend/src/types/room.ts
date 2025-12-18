@@ -7,7 +7,10 @@ export interface IRoom {
   status?: ROOM_STATUS;
   problem?: IProblem;
   duration: number;
-  startTime?:number;
+  startTime?: number;
+  submissions: ISubmissions;
+  winner?: string;
+  endTime?: number;
 }
 
 export interface IProblem {
@@ -23,4 +26,15 @@ export interface IProblemExample {
   input: string;
   output: string;
   explanation?: string;
+}
+
+export interface ISubmissions {
+  creator: ISubmission;
+  joiner: ISubmission;
+}
+
+export interface ISubmission {
+  submitted: boolean;
+  submissionTime?: number;
+  code?: string;
 }
