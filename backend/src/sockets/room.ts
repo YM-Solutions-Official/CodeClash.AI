@@ -1,6 +1,6 @@
 import { Server, Socket } from "socket.io";
 import RoomModel from "../models/room";
-import { ROOM_STATUS } from "../lib/constants";
+import { HARDCODED_PROBLEM, ROOM_STATUS } from "../lib/constants";
 
 export function setupRoomSockets(io: Server) {
   io.on("connection", (socket: Socket) => {
@@ -40,10 +40,20 @@ export function setupRoomSockets(io: Server) {
           ? [room.creatorId, room.joinedUser]
           : [room.creatorId];
 
+        let timeRemaining = null;
+        if (room.status === ROOM_STATUS.ACTIVE && room.startTime) {
+          const time = Math.floor((Date.now() - room.startTime) / 1000);
+          timeRemaining = Math.max(0, room.duration - time);
+        }
+
         callback({
           users,
           status: room.status,
           creatorId: room.creatorId,
+          problem: room.status === ROOM_STATUS.ACTIVE ? room.problem : null,
+          startTime: room.startTime,
+          duration: room.duration,
+          timeRemaining,
         });
       } catch (error) {
         console.error("Get room info error:", error);
@@ -67,10 +77,20 @@ export function setupRoomSockets(io: Server) {
 
         socket.to(roomId).emit("user_joined", socket.id);
 
+        let timeRemaining = null;
+        if (room.status === ROOM_STATUS.ACTIVE && room.startTime) {
+          const time = Math.floor((Date.now() - room.startTime) / 1000);
+          timeRemaining = Math.max(0, room.duration - time);
+        }
+
         callback({
           users: [room.creatorId, room.joinedUser],
           status: room.status,
           creatorId: room.creatorId,
+          problem: room.status === ROOM_STATUS.ACTIVE ? room.problem : null,
+          startTime: room.startTime,
+          duration: room.duration,
+          timeRemaining,
         });
 
         console.log(`User ${socket.id} joined room ${roomId}`);
@@ -93,10 +113,24 @@ export function setupRoomSockets(io: Server) {
         if (!room.joinedUser)
           return callback({ error: "Waiting for opponent" });
 
+        if (room.status !== ROOM_STATUS.WAITING)
+          return callback({ error: "Match already started" });
+
         room.status = ROOM_STATUS.ACTIVE;
+        room.problem = HARDCODED_PROBLEM;
+        room.startTime = Date.now();
         await room.save();
 
-        io.to(roomId).emit("match_started");
+        const matchData = {
+          problem: HARDCODED_PROBLEM,
+          startTime: room.startTime,
+          duration: room.duration,
+          endTime: room.startTime + room.duration * 1000,
+        };
+
+        io.to(roomId).emit("match_started", matchData);
+        callback({ success: true });
+        console.log(`Match started in room ${roomId}`);
       } catch (error) {
         console.error("Start match error:", error);
         callback({ error: "Failed to start match" });

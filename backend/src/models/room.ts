@@ -4,6 +4,9 @@ import { ROOM_MODEL, ROOM_STATUS } from "../lib/constants";
 
 const RoomSchema = new Schema<IRoom>(
   {
+    roomId: {
+      type: String,
+    },
     creatorId: {
       type: String,
       required: true,
@@ -15,6 +18,39 @@ const RoomSchema = new Schema<IRoom>(
       type: String,
       enum: Object.values(ROOM_STATUS),
       default: ROOM_STATUS.WAITING,
+    },
+    problem: {
+      title: {
+        type: String,
+      },
+      description: {
+        type: String,
+      },
+      inputFormat: {
+        type: String,
+      },
+      outputFormat: {
+        type: String,
+      },
+      constraints: [
+        {
+          type: String,
+        },
+      ],
+      examples: [
+        {
+          input: String,
+          output: String,
+          explanation: String,
+        },
+      ],
+    },
+    duration: {
+      type: Number,
+      default: 900,
+    },
+    startTime: {
+      type: Number,
     },
   },
   { timestamps: true }
