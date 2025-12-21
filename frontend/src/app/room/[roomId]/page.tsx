@@ -415,7 +415,7 @@ export default function RoomPage() {
                 cursor: "not-allowed",
               }}
             >
-              Submit (Coming Day 4)
+              Submit
             </button>
           </div>
         </div>

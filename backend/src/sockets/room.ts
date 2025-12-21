@@ -8,7 +8,7 @@ export function setupRoomSockets(io: Server) {
     console.log("New client connected", socket.id);
 
     // Create Room
-    socket.on("create_room", async (_, callback) => {
+    socket.on("create_room", async (_, callback: any) => {
       try {
         const room = await RoomModel.create({
           creatorId: socket.id,
@@ -29,7 +29,7 @@ export function setupRoomSockets(io: Server) {
     });
 
     // Get room info
-    socket.on("get_room_info", async ({ roomId }, callback) => {
+    socket.on("get_room_info", async ({ roomId }, callback: any) => {
       try {
         const room = await RoomModel.findById(roomId);
 
@@ -73,7 +73,7 @@ export function setupRoomSockets(io: Server) {
     });
 
     // Join Room
-    socket.on("join_room", async ({ roomId }, callback) => {
+    socket.on("join_room", async ({ roomId }, callback: any) => {
       try {
         const room = await RoomModel.findById(roomId);
 
@@ -117,7 +117,7 @@ export function setupRoomSockets(io: Server) {
     });
 
     // Start Match
-    socket.on("start_match", async ({ roomId }, callback) => {
+    socket.on("start_match", async ({ roomId }, callback: any) => {
       try {
         const room = await RoomModel.findById(roomId);
 
@@ -158,7 +158,7 @@ export function setupRoomSockets(io: Server) {
     });
 
     // Submit Code
-    socket.on("submit_code", async ({ roomId, code }, callback) => {
+    socket.on("submit_code", async ({ roomId, code }, callback: any) => {
       try {
         const room = await RoomModel.findById(roomId);
 
@@ -176,8 +176,8 @@ export function setupRoomSockets(io: Server) {
         }
 
         // Check if already submitted
-        const alreadySubmitted = isCreator 
-          ? room.submissions?.creator?.submitted 
+        const alreadySubmitted = isCreator
+          ? room.submissions?.creator?.submitted
           : room.submissions?.joiner?.submitted;
 
         if (alreadySubmitted) {
@@ -186,8 +186,8 @@ export function setupRoomSockets(io: Server) {
 
         // Record submission
         const submissionTime = Date.now();
-        
-       if (!room.submissions) {
+
+        if (!room.submissions) {
           room.submissions = {
             creator: { submitted: false },
             joiner: { submitted: false },
@@ -210,11 +210,11 @@ export function setupRoomSockets(io: Server) {
 
         await room.save();
 
-        socket.to(roomId).emit("opponent_submitted", { 
-          userId: socket.id 
+        socket.to(roomId).emit("opponent_submitted", {
+          userId: socket.id,
         });
 
-        callback({ 
+        callback({
           success: true,
           submissionTime,
         });
@@ -223,12 +223,11 @@ export function setupRoomSockets(io: Server) {
 
         // Check if match should end
         await checkMatchEnd(io, roomId);
-
       } catch (error) {
         console.error("Submit code error:", error);
         callback({ error: "Failed to submit code" });
       }
-    })
+    });
 
     socket.on("disconnect", async () => {
       console.log("Client Disconnected", socket.id);

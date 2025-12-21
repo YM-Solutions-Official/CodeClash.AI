@@ -9,7 +9,7 @@ import { setupRoomSockets } from "./sockets";
 dotenv.config();
 
 const app = express();
-const { PORT, MONGO_URI } = process.env;
+const { PORT, MONGO_URI, FRONTEND_URL } = process.env;
 
 app.use(express.json());
 
@@ -25,7 +25,7 @@ async function startServer() {
   const server = http.createServer(app);
 
   const io = new SockerServer(server, {
-    cors: { origin: "*" },
+    cors: { origin: FRONTEND_URL },
   });
 
   setupRoomSockets(io);

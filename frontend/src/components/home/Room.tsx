@@ -41,20 +41,21 @@ export default function Room() {
 
   return (
     <div style={{ padding: 20 }}>
-      <h1>CodeClash</h1>
+      <h1 className="text-4xl font-bold mb-5">CodeClash.AI</h1>
 
-      <button onClick={createRoom} disabled={loading}>
+      <button onClick={createRoom} disabled={loading} className="border px-2 rounded-md mb-5 cursor-pointer">
         {loading ? "Creating..." : "Create Room"}
       </button>
 
-      <hr />
+      <hr className="mb-2" />
 
       <input
         placeholder="Room Code"
         value={roomCode}
         onChange={(e) => setRoomCode(e.target.value)}
+        className="border mx-2 px-1"
       />
-      <button onClick={joinRoom}>Join Room</button>
+      <button onClick={joinRoom} className="cursor-pointer">Join Room</button>
     </div>
   );
 }

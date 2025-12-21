@@ -4,7 +4,8 @@ let socket: Socket;
 
 export const getSocket = () => {
   if (!socket) {
-    socket = io("http://localhost:8080", {
+    console.log(process.env.NEXT_PUBLIC_BACKEND_URL);
+    socket = io(process.env.NEXT_PUBLIC_BACKEND_URL, {
       transports: ["websocket"],
     });
   }
