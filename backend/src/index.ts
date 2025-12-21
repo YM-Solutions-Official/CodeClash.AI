@@ -1,9 +1,11 @@
-import express, { Request, Response } from "express";
+import express, { Response } from "express";
 import http from "http";
 import { Server as SockerServer } from "socket.io";
 import dotenv from "dotenv";
+import cors from "cors";
 import connectToDB from "./lib/db";
 import router from "./controller";
+import healthRouter from "./controller/health";
 import { setupRoomSockets } from "./sockets";
 
 dotenv.config();
@@ -12,11 +14,21 @@ const app = express();
 const { PORT, MONGO_URI, FRONTEND_URL } = process.env;
 
 app.use(express.json());
+app.use(
+  cors({
+    origin: FRONTEND_URL,
+    credentials: true,
+  })
+);
 
 app.use("/api", router);
+app.use("/health", healthRouter);
 
-app.get("/", (req: Request, res: Response) => {
-  res.json({ message: "Hello from backend!" });
+app.get("/ping", (_, res: Response) => {
+  res.status(200).json({
+    status: "ok",
+    time: new Date().toISOString(),
+  });
 });
 
 async function startServer() {
