@@ -1,4 +1,4 @@
-# CodeClash.AI
+# CodeClash
 
 ## What is this?
 A real-time 1v1 competitive coding platform where two users solve the same problem under a time limit and submit their solutions to determine a winner.
@@ -8,14 +8,10 @@ We originally built a version of this during a hackathon. It worked, but the cod
 This rebuild focuses on doing one thing well first: a clean, minimal competitive coding experience.
 No feature overload. No premature complexity.
 
-## Core Idea (Week 1)
-- Two users join the same room
-- The room creator starts the match
-- Both users receive the same problem
-- A countdown timer begins
-- Users write code privately
-- Users submit before time runs out
-- A winner is declared
+## Core Idea (Week 2)
+- Code running and submitting
+- Improve page UI
+- Auth Functionality
 
 
 ## Tech Stack
@@ -44,5 +40,6 @@ No feature overload. No premature complexity.
 5. AI mentor & recommendations
 
 ## Status
-🚧 Week 1 – Building the core competitive loop
+ Week 1 – Building the core competitive loop
+ Week 2 - Implementing code running, submission and auth
 
