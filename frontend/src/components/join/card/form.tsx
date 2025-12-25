@@ -37,7 +37,7 @@ export default function JoinForm() {
           value={roomCode}
           onChange={(e) => setRoomCode(e.target.value.toUpperCase())}
           placeholder="Enter 6-digit code"
-          className="h-14 text-center mt-2 text-2xl font-mono tracking-[0.5em] bg-background/50 border-2 border-border/50 focus:border-primary transition-all uppercase"
+          className="h-14 text-center mt-2 lg:text-2xl font-mono tracking-[0.5em] bg-background/50 border-2 border-border/50 focus:border-primary transition-all uppercase"
           maxLength={6}
         />
       </div>

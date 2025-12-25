@@ -3,7 +3,9 @@ import {
   CreateRoomRes,
   GetRoomInfoRes,
   JoinRoomRes,
+  RunCodeRes,
   StartMatchRes,
+  SubmitCodeRes,
 } from "../types/room";
 
 export class RoomAccessor {
@@ -66,6 +68,53 @@ export class RoomAccessor {
         });
       } catch (error) {
         console.log("START MATCH ERROR:", error);
+        rej(error);
+      }
+    });
+  }
+
+  public runCode(roomId: string, code: string, language: string = 'javascript'): Promise<RunCodeRes> {
+    return new Promise((res, rej) => {
+      try {
+        const socket = getSocket();
+
+        socket.emit("run_code", { roomId, code, language }, (response: RunCodeRes) => {
+          if (response.error) {
+            rej(response.error);
+            return;
+          }
+          res(response);
+        });
+
+        // Timeout after 10 seconds
+        setTimeout(() => {
+          rej('Execution timeout');
+        }, 10000);
+      } catch (error) {
+        console.log("RUN CODE ERROR:", error);
+        rej(error);
+      }
+    });
+  }
+
+  public submitCode(roomId: string, code: string): Promise<SubmitCodeRes> {
+    return new Promise((res, rej) => {
+      try {
+        const socket = getSocket();
+
+        socket.emit("submit_code", { roomId, code }, (response: SubmitCodeRes) => {
+          if (response.error) {
+            rej(response.error);
+            return;
+          }
+          res(response);
+        });
+
+        setTimeout(() => {
+          rej('Submission timeout');
+        }, 10000);
+      } catch (error) {
+        console.log("SUBMIT CODE ERROR:", error);
         rej(error);
       }
     });
