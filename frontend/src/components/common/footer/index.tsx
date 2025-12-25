@@ -1,6 +1,7 @@
-'use client';
+"use client";
 import { motion } from "motion/react";
-import { Github, Zap } from "lucide-react";
+import { Github } from "lucide-react";
+import Image from "next/image";
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
@@ -16,14 +17,22 @@ export default function Footer() {
           className="flex flex-col md:flex-row items-center justify-between gap-6"
         >
           {/* Logo */}
-          <a href="/" className="flex items-center gap-2 group">
-            <div className="relative flex items-center justify-center w-6 h-6 rounded-md bg-foreground/5 border border-border/50">
-              <Zap className="h-3 w-3 text-foreground" />
-            </div>
-            <span className="text-sm font-semibold text-foreground">
+          <motion.a
+            href="/"
+            className="flex items-center gap-1.5 group"
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+          >
+            <Image
+              src="/images/icon-2.png"
+              height={50}
+              width={50}
+              alt="logo-image"
+            />
+            <span className="text-lg font-semibold tracking-tight text-foreground">
               CodeClash
             </span>
-          </a>
+          </motion.a>
 
           {/* Center Text */}
           <p className="text-sm text-muted-foreground">

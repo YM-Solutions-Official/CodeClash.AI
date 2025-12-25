@@ -1,4 +1,4 @@
-import HomeLayout from "@/components/home/layout";
+import HomeLayout from "@/components/layout/home-layout";
 import Hero from "@/components/home/hero";
 import ProductPreview from "@/components/home/product-preview";
 import HowItWorks from "@/components/home/how-it-works";
@@ -11,7 +11,7 @@ export default function Home() {
       <Hero />
       <ProductPreview />
       <HowItWorks />
-      <Features />
+      <Features />  
       <CTA />
     </HomeLayout>
   );

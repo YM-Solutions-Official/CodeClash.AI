@@ -70,4 +70,18 @@ export class RoomAccessor {
       }
     });
   }
+
+  public getTimerColor = (timeRemaining: number) => {
+    if (timeRemaining && timeRemaining <= 60) return "text-red-500";
+    if (timeRemaining && timeRemaining <= 180) return "text-yellow-500";
+    return "text-foreground";
+  };
+
+  public formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, "0")}:${secs
+      .toString()
+      .padStart(2, "0")}`;
+  };
 }

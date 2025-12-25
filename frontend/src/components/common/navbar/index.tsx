@@ -45,7 +45,7 @@ export default function Navbar() {
               alt="logo-image"
             />
             <span className="text-lg font-semibold tracking-tight text-foreground">
-              CodeClash.AI
+              CodeClash
             </span>
           </motion.a>
 
@@ -56,7 +56,7 @@ export default function Navbar() {
                 key={item}
                 href={
                   item === "Open Source"
-                    ? "https://github.com/YM-Solutions-Official/CodeClash.AI"
+                    ? "https://github.com/YM-Solutions-Official/CodeClash"
                     : `#${item.toLowerCase().replace(/ /g, "-")}`
                 }
                 target={item === "Open Source" ? "_blank" : undefined}
