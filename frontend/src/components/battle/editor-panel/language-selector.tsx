@@ -1,56 +1,14 @@
+"use client";
 import { Button } from "@/components/ui/button";
+import { useCodeExecution } from "@/hooks/useCodeExecution";
 import { useBattleArenaStore } from "@/store/useBattleArenaStore";
 import { FileCode, Play, Send } from "lucide-react";
+import { useParams } from "next/navigation";
 
 export default function LanguageSelector() {
-
-  const { isRunning, setIsRunning, setOutput, setActiveTab} = useBattleArenaStore();
-
-  const runCode = () => {
-    setIsRunning(true);
-    setActiveTab("output");
-
-    // Simulate running code
-    setTimeout(() => {
-      setOutput(`Running test cases...
-
-Test 1: nums = [2,7,11,15], target = 9
-Expected: [0,1]
-Output: [0,1]
-✓ Passed
-
-Test 2: nums = [3,2,4], target = 6
-Expected: [1,2]
-Output: [1,2]
-✓ Passed
-
-All test cases passed!`);
-      setIsRunning(false);
-    }, 1500);
-  };
-
-  const submitCode = () => {
-    setIsRunning(true);
-    setTimeout(() => {
-      setOutput(`Submitting solution...
-
-Running all test cases...
-
-Test 1: ✓ Passed (2ms)
-Test 2: ✓ Passed (1ms)
-Test 3: ✓ Passed (3ms)
-Test 4: ✓ Passed (2ms)
-Test 5: ✓ Passed (1ms)
-...
-Test 50: ✓ Passed (2ms)
-
-🎉 All 50 test cases passed!
-Runtime: 52ms (faster than 89%)
-Memory: 42.1 MB (less than 67%)`);
-      setIsRunning(false);
-      setActiveTab("output");
-    }, 2000);
-  };
+  const { roomId } = useParams<{ roomId: string }>();
+  const { isRunning, mySubmitted } = useBattleArenaStore();
+  const { handleRunCode, handleSubmitCode } = useCodeExecution(roomId);
 
   return (
     <div className="h-12 border-b border-border/50 flex items-center justify-between px-4 shrink-0">
@@ -63,7 +21,7 @@ Memory: 42.1 MB (less than 67%)`);
         <Button
           variant="outline"
           size="sm"
-          onClick={runCode}
+          onClick={handleRunCode}
           disabled={isRunning}
           className="border-border/50"
         >
@@ -72,8 +30,8 @@ Memory: 42.1 MB (less than 67%)`);
         </Button>
         <Button
           size="sm"
-          onClick={submitCode}
-          disabled={isRunning}
+          onClick={handleSubmitCode}
+          disabled={isRunning || mySubmitted}
           className="bg-primary hover:bg-primary/90"
         >
           <Send className="w-4 h-4 mr-1" />

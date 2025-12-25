@@ -1,7 +1,7 @@
 import { Server, Socket } from "socket.io";
 import RoomModel from "../models/room";
 import { HARDCODED_PROBLEM, ROOM_STATUS } from "../lib/constants";
-import { checkMatchEnd } from "./helper";
+import { checkMatchEnd, executeCode } from "./helper";
 import { generateRoomId } from "../lib/nanoid";
 
 export function setupRoomSockets(io: Server) {
@@ -54,6 +54,7 @@ export function setupRoomSockets(io: Server) {
         }
 
         const isCreator = socket.id === room.creatorId;
+        const role = socket.id === room.creatorId ? "creator" : "joiner";
         const hasSubmitted = isCreator
           ? room.submissions?.creator?.submitted
           : room.submissions?.joiner?.submitted;
@@ -63,6 +64,7 @@ export function setupRoomSockets(io: Server) {
           roomCode: room.roomCode,
           status: room.status,
           creatorId: room.creatorId,
+          role,
           problem: room.status === ROOM_STATUS.ACTIVE ? room.problem : null,
           startTime: room.startTime,
           duration: room.duration,
@@ -124,6 +126,21 @@ export function setupRoomSockets(io: Server) {
       }
     });
 
+    socket.on("rejoin_room", async ({ roomId }, callback: any) => {
+      const room = await RoomModel.findById(roomId);
+      if (!room) return callback({ error: "Room not found" });
+
+      socket.join(room.roomCode!);
+      callback({ success: true });
+    });
+
+    socket.on("leave_room", async ({ roomId }) => {
+      const room = await RoomModel.findById(roomId);
+      if (!room) return;
+
+      socket.leave(room.roomCode!);
+    });
+
     // Start Match
     socket.on("start_match", async ({ roomId }, callback: any) => {
       try {
@@ -162,6 +179,32 @@ export function setupRoomSockets(io: Server) {
       } catch (error) {
         console.error("Start match error:", error);
         callback({ error: "Failed to start match" });
+      }
+    });
+
+    socket.on("run_code", async ({ roomId, code, language }, callback: any) => {
+      try {
+        const room = await RoomModel.findById(roomId);
+        if (!room) return callback({ error: "Room not found" });
+
+        if (room.status !== ROOM_STATUS.ACTIVE) {
+          return callback({ error: "Match is not active" });
+        }
+
+        // Execute code against test cases
+        const testResults = await executeCode(
+          code,
+          room.problem!.examples,
+          language
+        );
+
+        callback({
+          success: true,
+          results: testResults,
+        });
+      } catch (error) {
+        console.error("Run code error:", error);
+        callback({ error: "Failed to run code" });
       }
     });
 
@@ -218,7 +261,7 @@ export function setupRoomSockets(io: Server) {
 
         await room.save();
 
-        socket.to(roomId).emit("opponent_submitted", {
+        socket.to(room.roomCode!).emit("opponent_submitted", {
           userId: socket.id,
         });
 

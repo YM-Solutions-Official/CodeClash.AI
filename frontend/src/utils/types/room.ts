@@ -11,6 +11,7 @@ export interface GetRoomInfoRes {
   roomCode?: string;
   status?: ROOM_STATUS;
   creatorId?: string;
+  role: "creator" | "joiner";
   problem?: any;
   startTime?: number;
   duration?: number;
@@ -48,4 +49,26 @@ export interface MatchStartedRes {
   startTime: number;
   duration: number;
   endTime: number;
+}
+
+export interface TestResult {
+  testCase: number;
+  input: string;
+  expectedOutput: string;
+  actualOutput: string | null;
+  passed: boolean;
+  executionTime: number;
+  error: string | null;
+}
+
+export interface RunCodeRes {
+  success?: boolean;
+  results?: TestResult[];
+  error?: string;
+}
+
+export interface SubmitCodeRes {
+  success?: boolean;
+  submissionTime?: number;
+  error?: string;
 }

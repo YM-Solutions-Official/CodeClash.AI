@@ -13,8 +13,14 @@ export default function BattleLayout({
   children: ReactNode;
   roomId: string;
 }>) {
-  const { roomInfo, setRoomInfo, setOpponentStatus, setTimeRemaining } =
-    useBattleArenaStore();
+  const {
+    roomInfo,
+    setRoomInfo,
+    setOpponentStatus,
+    setTimeRemaining,
+    setMySubmitted,
+    setOpponentSubmitted,
+  } = useBattleArenaStore();
   const router = useRouter();
   const roomAccessor = new RoomAccessor();
   const { getRoomInfo } = roomAccessor;
@@ -38,12 +44,29 @@ export default function BattleLayout({
   useEffect(() => {
     if (!roomInfo?.startTime || !roomInfo?.duration) return;
 
+    const isCreator = roomInfo.role === "creator";
+
+    const mySubmitted = isCreator
+      ? roomInfo.submissions?.creator?.submitted
+      : roomInfo.submissions?.joiner?.submitted;
+
+    const opponentSubmitted = isCreator
+      ? roomInfo.submissions?.joiner?.submitted
+      : roomInfo.submissions?.creator?.submitted;
+
+    setMySubmitted(!!mySubmitted);
+    setOpponentSubmitted(!!opponentSubmitted);
+
     const interval = setInterval(() => {
       const time = Math.floor((Date.now() - roomInfo.startTime!) / 1000);
       const remaining = Math.max(0, roomInfo.duration! - time);
       setTimeRemaining(remaining);
 
-      if (remaining === 0) clearInterval(interval);
+      if (remaining === 0) {
+        clearInterval(interval);
+        toast.error("Time's up!");
+        router.push(`/results/${roomId}`);
+      }
     }, 1000);
 
     return () => clearInterval(interval);
@@ -52,8 +75,25 @@ export default function BattleLayout({
   useEffect(() => {
     const socket = getSocket();
 
+    socket.emit("rejoin_room", { roomId }, (res: any) => {
+      if (res?.error) {
+        toast.error(res.error);
+        router.push("/");
+      }
+    });
+
+    return () => {
+      socket.emit("leave_room", { roomId });
+    };
+  }, [roomId]);
+
+  useEffect(() => {
+    const socket = getSocket();
+
     socket.on("opponent_submitted", () => {
       setOpponentStatus("submitted");
+      setOpponentSubmitted(true);
+      toast.error("Opponent has submitted!");
     });
 
     return () => {

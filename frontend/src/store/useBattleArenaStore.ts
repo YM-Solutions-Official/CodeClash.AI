@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { GetRoomInfoRes } from "@/utils/types/room";
+import { GetRoomInfoRes, TestResult } from "@/utils/types/room";
 
 type OpponentStatus = "typing" | "idle" | "submitted";
 type ActiveTab = "problem" | "output";
@@ -12,6 +12,8 @@ interface BattleArenaState {
   // Code editor
   code: string;
   setCode: (code: string) => void;
+  language: string;
+  setLanguage: (language: string) => void;
 
   // Timer
   timeRemaining: number | null;
@@ -26,10 +28,17 @@ interface BattleArenaState {
   setOutput: (output: string) => void;
   isRunning: boolean;
   setIsRunning: (running: boolean) => void;
+  testResults: TestResult[];
+  setTestResults: (results: TestResult[]) => void;
 
   // UI
   activeTab: ActiveTab;
   setActiveTab: (tab: ActiveTab) => void;
+
+  mySubmitted: boolean;
+  setMySubmitted: (v: boolean) => void;
+  opponentSubmitted: boolean;
+  setOpponentSubmitted: (v: boolean) => void;
 
   // Actions
   resetStore: () => void;
@@ -43,11 +52,15 @@ const defaultCode = `function twoSum(nums, target) {
 const initialState = {
   roomInfo: null,
   code: defaultCode,
+  language: "javascript",
   timeRemaining: null,
-  opponentStatus: "typing" as OpponentStatus,
+  opponentStatus: "idle" as OpponentStatus,
+  testResults: [],
   output: "",
   isRunning: false,
   activeTab: "problem" as ActiveTab,
+  mySubmitted: false,
+  opponentSubmitted: false,
 };
 
 export const useBattleArenaStore = create<BattleArenaState>((set) => ({
@@ -57,6 +70,8 @@ export const useBattleArenaStore = create<BattleArenaState>((set) => ({
 
   setCode: (code) => set({ code }),
 
+  setLanguage: (language) => set({ language }),
+
   setTimeRemaining: (time) => set({ timeRemaining: time }),
 
   setOpponentStatus: (status) => set({ opponentStatus: status }),
@@ -65,7 +80,13 @@ export const useBattleArenaStore = create<BattleArenaState>((set) => ({
 
   setIsRunning: (running) => set({ isRunning: running }),
 
+  setTestResults: (results) => set({ testResults: results }),
+
   setActiveTab: (tab) => set({ activeTab: tab }),
+
+  setMySubmitted: (submitted) => set({ mySubmitted: submitted }),
+
+  setOpponentSubmitted: (submitted) => set({ opponentSubmitted: submitted }),
 
   resetStore: () => set(initialState),
 }));
