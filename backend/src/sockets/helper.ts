@@ -4,6 +4,8 @@ import { ROOM_STATUS } from "../lib/constants";
 import { IRoom } from "../types";
 import axios from "axios";
 
+const PROXY_URL = process.env.PISTON_URL;
+
 export function findWinner(room: IRoom): string {
   const isCreatorSubmitted = room.submissions?.creator?.submitted;
   const isJoinerSubmitted = room.submissions?.joiner?.submitted;
@@ -89,34 +91,6 @@ export async function executeCode(
   testCases: any[],
   language: string
 ) {
-  return await runWithPiston(code, testCases, language);
-}
-
-async function runInSandbox(code: string, input: any, language: string) {
-  if (language !== "javascript") {
-    throw new Error("Only JavaScript is supported");
-  }
-
-  // Create a safe execution environment
-  const { VM } = require("vm2");
-  const vm = new VM({
-    timeout: 5000, // 5 second timeout
-    sandbox: {},
-  });
-
-  // Wrap the code to call with input
-  const wrappedCode = `
-    ${code}
-    
-    // Call the function with test input
-    const result = twoSum(${JSON.stringify(input.nums)}, ${input.target});
-    result;
-  `;
-
-  return vm.run(wrappedCode);
-}
-
-async function runWithPiston(code: string, testCases: any[], language: string) {
   const wrappedCode = `
 ${code}
 
@@ -173,21 +147,40 @@ for (let i = 0; i < testCases.length; i++) {
 console.log(JSON.stringify(results));
 `;
 
-  const response = await axios.post(
-    "https://emkc.org/api/v2/piston/execute",
-    {
-      language,
-      version: "18.15.0",
-      files: [{ name: "main.js", content: wrappedCode }],
-      run_timeout: 3000,
-      run_memory_limit: 128000000,
-    },
-    { timeout: 12000 }
-  );
+  try {
+    console.log("Sending code to proxy...");
 
-  if (response.data.run.stderr) {
-    throw new Error(response.data.run.stderr);
+    const response = await axios.post(
+      PROXY_URL!,
+      {
+        language: language,
+        version: "18.15.0",
+        files: [{ content: wrappedCode }],
+      },
+      {
+        timeout: 20000,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+
+    console.log("Received response from proxy");
+
+    if (response.data.run?.stderr) {
+      throw new Error(response.data.run.stderr);
+    }
+
+    if (!response.data.run?.stdout) {
+      throw new Error("No output from code execution");
+    }
+
+    return JSON.parse(response.data.run.stdout);
+  } catch (error: any) {
+    console.error("Execution error:", error.message);
+
+    if (error.code === "ECONNABORTED") {
+      throw new Error("Timeout - code took too long to execute");
+    }
+
+    throw new Error(`Execution failed: ${error.message}`);
   }
-
-  return JSON.parse(response.data.run.stdout);
 }
