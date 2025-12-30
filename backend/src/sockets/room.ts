@@ -259,6 +259,17 @@ export function setupRoomSockets(io: Server) {
           };
         }
 
+        const results = await executeCode(
+          code,
+          room.problem!.examples,
+          "javascript"
+        );
+
+        const allPassed = results.every((r) => r.passed);
+        if (!allPassed) {
+          return callback({ error: "Some test cases failed" });
+        }
+
         await room.save();
 
         socket.to(room.roomCode!).emit("opponent_submitted", {

@@ -118,25 +118,44 @@ async function runInSandbox(code: string, input: any, language: string) {
 
 async function runWithPiston(code: string, testCases: any[], language: string) {
   const wrappedCode = `
-${code};
+${code}
 
 function deepEqual(a, b) {
   return JSON.stringify(a) === JSON.stringify(b);
+}
+
+function parseInput(inputStr) {
+  const numsMatch = inputStr.match(/nums\\s*=\\s*(\\[.*?\\])/);
+  const targetMatch = inputStr.match(/target\\s*=\\s*(\\d+)/);
+
+  if (numsMatch && targetMatch) {
+    return {
+      nums: JSON.parse(numsMatch[1]),
+      target: parseInt(targetMatch[1]),
+    };
+  }
+
+  return JSON.parse(inputStr);
+}
+
+function parseOutput(outputStr) {
+  return JSON.parse(outputStr);
 }
 
 const testCases = ${JSON.stringify(testCases)};
 const results = [];
 
 for (let i = 0; i < testCases.length; i++) {
-  const input = ${JSON.stringify(parseInput(testCases[0].input))};
-  const expected = ${JSON.stringify(parseOutput(testCases[0].output))};
-
   try {
+    const input = parseInput(testCases[i].input);
+    const expected = parseOutput(testCases[i].output);
+
     const start = Date.now();
     const output = twoSum(input.nums, input.target);
     const time = Date.now() - start;
 
     results.push({
+      testCase: i + 1,
       passed: deepEqual(output, expected),
       output,
       expected,
@@ -144,6 +163,7 @@ for (let i = 0; i < testCases.length; i++) {
     });
   } catch (err) {
     results.push({
+      testCase: i + 1,
       passed: false,
       error: err.message,
     });
@@ -162,7 +182,7 @@ console.log(JSON.stringify(results));
       run_timeout: 3000,
       run_memory_limit: 128000000,
     },
-    { timeout: 10000 }
+    { timeout: 12000 }
   );
 
   if (response.data.run.stderr) {
