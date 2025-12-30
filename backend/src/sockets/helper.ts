@@ -2,6 +2,9 @@ import { Server } from "socket.io";
 import RoomModel from "../models/room";
 import { ROOM_STATUS } from "../lib/constants";
 import { IRoom } from "../types";
+import axios from "axios";
+
+const PROXY_URL = process.env.PISTON_URL;
 
 export function findWinner(room: IRoom): string {
   const isCreatorSubmitted = room.submissions?.creator?.submitted;
@@ -61,14 +64,14 @@ export function parseInput(inputStr: string): any {
   try {
     const numsMatch = inputStr.match(/nums\s*=\s*(\[.*?\])/);
     const targetMatch = inputStr.match(/target\s*=\s*(\d+)/);
-    
+
     if (numsMatch && targetMatch) {
       return {
         nums: JSON.parse(numsMatch[1]),
-        target: parseInt(targetMatch[1])
+        target: parseInt(targetMatch[1]),
       };
     }
-    
+
     return JSON.parse(inputStr);
   } catch (error) {
     throw new Error(`Failed to parse input: ${inputStr}`);
@@ -88,69 +91,96 @@ export async function executeCode(
   testCases: any[],
   language: string
 ) {
-  const results: any[] = [];
+  const wrappedCode = `
+${code}
 
-  for (let i = 0; i < testCases.length; i++) {
-    const testCase = testCases[i];
-
-    try {
-      // Parse input and expected output
-      const input = parseInput(testCase.input);
-      const expectedOutput = parseOutput(testCase.output);
-
-      // Create a safe execution context
-      const startTime = Date.now();
-      const result = await runInSandbox(code, input, language);
-      const executionTime = Date.now() - startTime;
-
-      // Compare results
-      const passed = JSON.stringify(result) === JSON.stringify(expectedOutput);
-
-      results.push({
-        testCase: i + 1,
-        input: testCase.input,
-        expectedOutput: testCase.output,
-        actualOutput: JSON.stringify(result),
-        passed,
-        executionTime,
-        error: null,
-      });
-    } catch (error: any) {
-      results.push({
-        testCase: i + 1,
-        input: testCase.input,
-        expectedOutput: testCase.output,
-        actualOutput: null,
-        passed: false,
-        executionTime: 0,
-        error: error.message,
-      });
-    }
-  }
-
-  return results;
+function deepEqual(a, b) {
+  return JSON.stringify(a) === JSON.stringify(b);
 }
 
-async function runInSandbox(code: string, input: any, language: string) {
-  if (language !== "javascript") {
-    throw new Error("Only JavaScript is supported");
+function parseInput(inputStr) {
+  const numsMatch = inputStr.match(/nums\\s*=\\s*(\\[.*?\\])/);
+  const targetMatch = inputStr.match(/target\\s*=\\s*(\\d+)/);
+
+  if (numsMatch && targetMatch) {
+    return {
+      nums: JSON.parse(numsMatch[1]),
+      target: parseInt(targetMatch[1]),
+    };
   }
 
-  // Create a safe execution environment
-  const { VM } = require("vm2");
-  const vm = new VM({
-    timeout: 5000, // 5 second timeout
-    sandbox: {},
-  });
+  return JSON.parse(inputStr);
+}
 
-  // Wrap the code to call with input
-  const wrappedCode = `
-    ${code}
-    
-    // Call the function with test input
-    const result = twoSum(${JSON.stringify(input.nums)}, ${input.target});
-    result;
-  `;
+function parseOutput(outputStr) {
+  return JSON.parse(outputStr);
+}
 
-  return vm.run(wrappedCode);
+const testCases = ${JSON.stringify(testCases)};
+const results = [];
+
+for (let i = 0; i < testCases.length; i++) {
+  try {
+    const input = parseInput(testCases[i].input);
+    const expected = parseOutput(testCases[i].output);
+
+    const start = Date.now();
+    const output = twoSum(input.nums, input.target);
+    const time = Date.now() - start;
+
+    results.push({
+      testCase: i + 1,
+      passed: deepEqual(output, expected),
+      output,
+      expected,
+      executionTime: time,
+    });
+  } catch (err) {
+    results.push({
+      testCase: i + 1,
+      passed: false,
+      error: err.message,
+    });
+  }
+}
+
+console.log(JSON.stringify(results));
+`;
+
+  try {
+    console.log("Sending code to proxy...");
+
+    const response = await axios.post(
+      PROXY_URL!,
+      {
+        language: language,
+        version: "18.15.0",
+        files: [{ content: wrappedCode }],
+      },
+      {
+        timeout: 20000,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+
+    console.log("Received response from proxy");
+
+    if (response.data.run?.stderr) {
+      throw new Error(response.data.run.stderr);
+    }
+
+    if (!response.data.run?.stdout) {
+      throw new Error("No output from code execution");
+    }
+
+    return JSON.parse(response.data.run.stdout);
+  } catch (error: any) {
+    console.error("Execution error:", error.message);
+
+    if (error.code === "ECONNABORTED") {
+      throw new Error("Timeout - code took too long to execute");
+    }
+
+    throw new Error(`Execution failed: ${error.message}`);
+  }
 }
