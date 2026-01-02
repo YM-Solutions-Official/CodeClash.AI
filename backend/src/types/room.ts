@@ -1,17 +1,20 @@
+import { Types } from "mongoose";
 import { ROOM_STATUS } from "../lib/constants/enum";
 
 export interface IRoom {
-  roomId?: string;
-  roomCode?:string;
+  _id?: string;
+  roomCode?: string;
   creatorId: string;
-  joinedUser?: string;
-  status?: ROOM_STATUS;
+  creatorUser: Types.ObjectId;
+  joinerId: string;
+  joinerUser: Types.ObjectId;
+  status: ROOM_STATUS;
   problem?: IProblem;
+  submissions?: ISubmissions;
   duration: number;
   startTime?: number;
-  submissions: ISubmissions;
-  winner?: string;
   endTime?: number;
+  winner?: string;
 }
 
 export interface IProblem {
