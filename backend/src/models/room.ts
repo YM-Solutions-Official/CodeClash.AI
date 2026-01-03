@@ -23,12 +23,12 @@ const RoomSchema = new Schema<IRoom>(
     },
     joinerId: {
       type: String,
-      required: true,
+      required: false,
       trim: true,
     },
     joinerUser: {
       type: Types.ObjectId,
-      required: true,
+      required: false,
       ref: USER_MODEL,
     },
     status: {

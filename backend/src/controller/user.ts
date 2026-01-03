@@ -1,5 +1,6 @@
 import { Router } from "express";
 import {
+  getMyInfo,
   createGuestAccount,
   loginUser,
   singupUser,
@@ -7,6 +8,8 @@ import {
 } from "../service";
 
 const authRouter = Router();
+
+authRouter.get("/me", getMyInfo);
 
 authRouter.post("/guest", createGuestAccount);
 
