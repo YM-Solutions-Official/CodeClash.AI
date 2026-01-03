@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "motion/react";
 import toast from "react-hot-toast";
@@ -10,7 +10,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Mail, Lock, User, ArrowRight, Loader2 } from "lucide-react";
 
-export default function AuthCard() {
+export default function AuthCardWrapper() {
+  return (
+    <Suspense fallback={<AuthCardSkeleton />}>
+      <AuthCard />
+    </Suspense>
+  );
+}
+
+function AuthCard() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
@@ -293,5 +301,20 @@ export default function AuthCard() {
         </div>
       </div>
     </motion.div>
+  );
+}
+
+function AuthCardSkeleton() {
+  return (
+    <div className="w-full max-w-md mt-5 rounded-2xl p-8 animate-pulse bg-muted/20">
+      <div className="h-6 w-1/2 bg-muted rounded mb-4" />
+      <div className="h-4 w-3/4 bg-muted rounded mb-8" />
+
+      <div className="space-y-4">
+        <div className="h-11 bg-muted rounded" />
+        <div className="h-11 bg-muted rounded" />
+        <div className="h-11 bg-muted rounded" />
+      </div>
+    </div>
   );
 }
