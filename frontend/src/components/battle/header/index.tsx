@@ -2,14 +2,13 @@
 import { motion } from "motion/react";
 import Image from "next/image";
 import { useBattleArenaStore } from "@/store/useBattleArenaStore";
-import { RoomAccessor } from "@/utils/accessors";
+import { roomAccessor } from "@/utils/accessors";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CheckCircle2, Clock, User } from "lucide-react";
 
 export default function RoomHeader() {
   const { timeRemaining, roomInfo, opponentStatus, opponentSubmitted } =
     useBattleArenaStore();
-  const roomAccessor = new RoomAccessor();
   const { getTimerColor, formatTime } = roomAccessor;
 
   const isLastMinute = timeRemaining! <= 60;

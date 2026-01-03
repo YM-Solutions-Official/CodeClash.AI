@@ -1,13 +1,12 @@
 "use client";
 import { AnimatePresence, motion } from "motion/react";
 import { useWaitingRoomStore } from "@/store/useWaitingRoomStore";
-import { RoomAccessor } from "@/utils/accessors";
+import { roomAccessor } from "@/utils/accessors";
 import { Button } from "@/components/ui/button";
 import { Zap } from "lucide-react";
 
 export default function StartButton({ roomId }: { roomId: string }) {
   const { canStart, isCreator, activeUsers } = useWaitingRoomStore();
-  const roomAccessor = new RoomAccessor();
   const { startMatch } = roomAccessor;
 
   const handleStartMatch = () => {

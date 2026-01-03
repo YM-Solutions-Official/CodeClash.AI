@@ -5,12 +5,11 @@ import toast from "react-hot-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useJoinRoomStore } from "@/store/useJoinRoomStore";
-import { RoomAccessor } from "@/utils/accessors";
+import { roomAccessor } from "@/utils/accessors";
 import { Zap } from "lucide-react";
 
 export default function JoinForm() {
   const { isJoining, roomCode, setIsJoining, setRoomCode } = useJoinRoomStore();
-  const roomAccessor = new RoomAccessor();
   const { joinRoom } = roomAccessor;
   const router = useRouter();
 
@@ -37,7 +36,7 @@ export default function JoinForm() {
           value={roomCode}
           onChange={(e) => setRoomCode(e.target.value.toUpperCase())}
           placeholder="Enter 6-digit code"
-          className="h-14 text-center mt-2 lg:text-2xl font-mono tracking-[0.5em] bg-background/50 border-2 border-border/50 focus:border-primary transition-all uppercase"
+          className="h-14 text-center mt-2 font-mono tracking-[0.5em] bg-background/50 border-2 border-border/50 focus:border-primary transition-all uppercase"
           maxLength={6}
         />
       </div>

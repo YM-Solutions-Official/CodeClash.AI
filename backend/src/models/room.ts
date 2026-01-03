@@ -1,25 +1,39 @@
 import { model, Schema, Types } from "mongoose";
 import type { IRoom } from "../types";
-import { ROOM_MODEL, ROOM_STATUS } from "../lib/constants";
+import { ROOM_MODEL, ROOM_STATUS, USER_MODEL } from "../lib/constants";
 
 const RoomSchema = new Schema<IRoom>(
   {
-    roomId: {
-      type: String,
-    },
     roomCode: {
       type: String,
+      required: false,
+      minLength: 6,
       maxLength: 6,
+      trim: true,
     },
     creatorId: {
       type: String,
       required: true,
+      trim: true,
     },
-    joinedUser: {
+    creatorUser: {
+      type: Types.ObjectId,
+      required: true,
+      ref: USER_MODEL,
+    },
+    joinerId: {
       type: String,
+      required: false,
+      trim: true,
+    },
+    joinerUser: {
+      type: Types.ObjectId,
+      required: false,
+      ref: USER_MODEL,
     },
     status: {
       type: String,
+      required: false,
       enum: Object.values(ROOM_STATUS),
       default: ROOM_STATUS.WAITING,
     },
@@ -49,13 +63,6 @@ const RoomSchema = new Schema<IRoom>(
         },
       ],
     },
-    duration: {
-      type: Number,
-      default: 900,
-    },
-    startTime: {
-      type: Number,
-    },
     submissions: {
       type: {
         creator: {
@@ -74,11 +81,22 @@ const RoomSchema = new Schema<IRoom>(
         joiner: { submitted: false },
       }),
     },
-    winner: {
-      type: String,
+    duration: {
+      type: Number,
+      required: false,
+      default: 900,
+    },
+    startTime: {
+      type: Number,
+      required: false,
     },
     endTime: {
       type: Number,
+      required: false,
+    },
+    winner: {
+      type: String,
+      required: false,
     },
   },
   { timestamps: true }

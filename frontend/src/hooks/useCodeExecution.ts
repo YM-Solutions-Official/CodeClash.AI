@@ -1,6 +1,6 @@
 "use client";
 import { useBattleArenaStore } from "@/store/useBattleArenaStore";
-import { RoomAccessor } from "@/utils/accessors";
+import { roomAccessor } from "@/utils/accessors";
 import toast from "react-hot-toast";
 
 interface TestResult {
@@ -25,7 +25,6 @@ export function useCodeExecution(roomId: string) {
     setMySubmitted,
     setOpponentStatus,
   } = useBattleArenaStore();
-  const roomAccessor = new RoomAccessor();
   const { runCode, submitCode } = roomAccessor;
 
   const handleRunCode = async () => {

@@ -1,41 +1,8 @@
 "use client";
 import { motion } from "motion/react";
-import { Button } from "@/components/ui/button";
-import { ArrowRight, GamepadDirectional } from "lucide-react";
-import { RoomAccessor } from "@/utils/accessors";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import toast from "react-hot-toast";
+import RoomBtns from "@/components/common/room-btns/RoomBtns";
 
 export default function Hero() {
-  const [loading, setLoading] = useState(false);
-  const roomAccessor = new RoomAccessor();
-  const router = useRouter();
-
-  const { createRoom } = roomAccessor;
-
-  async function handleCreateRoom() {
-    try {
-      setLoading(true);
-      const response = await createRoom();
-
-      if (response.error) {
-        toast.error("Failed to create room");
-        return;
-      }
-
-      setLoading(false);
-
-      router.push("/waiting/" + response.roomId);
-    } catch (error) {
-      toast.error("Something went wrong");
-    }
-  }
-
-  function handleJoinRoom() {
-    router.push("/join");
-  }
-
   return (
     <section className="relative min-h-screen flex items-center justify-center pt-20 overflow-hidden">
       {/* Premium Spotlight Effects */}
@@ -98,47 +65,7 @@ export default function Hero() {
             the clock.
           </motion.p>
 
-          {/* CTA - Single prominent button like the reference */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
-            className="flex flex-col sm:flex-row items-center justify-center gap-4"
-          >
-            <Button
-              onClick={handleCreateRoom}
-              disabled={loading}
-              variant="hero"
-              size="lg"
-              className="group min-w-45"
-            >
-              Create Room
-              <motion.span
-                className="inline-block"
-                initial={{ x: 0 }}
-                whileHover={{ x: 4 }}
-                transition={{ duration: 0.2 }}
-              >
-                <ArrowRight className="h-4 w-4" />
-              </motion.span>
-            </Button>
-            <Button
-              onClick={handleJoinRoom}
-              variant="glow"
-              size="lg"
-              className="group min-w-45"
-            >
-              Join Room
-              <motion.span
-                className="inline-block"
-                initial={{ x: 0 }}
-                whileHover={{ x: 4 }}
-                transition={{ duration: 0.2 }}
-              >
-                <GamepadDirectional className="h-4 w-4" />
-              </motion.span>
-            </Button>
-          </motion.div>
+          <RoomBtns />
         </div>
       </div>
     </section>

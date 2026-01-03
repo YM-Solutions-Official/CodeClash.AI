@@ -1,7 +1,7 @@
 "use client";
 import { getSocket } from "@/lib/socket";
 import { useBattleArenaStore } from "@/store/useBattleArenaStore";
-import { RoomAccessor } from "@/utils/accessors";
+import { roomAccessor } from "@/utils/accessors";
 import { useRouter } from "next/navigation";
 import { ReactNode, useEffect } from "react";
 import toast from "react-hot-toast";
@@ -22,7 +22,6 @@ export default function BattleLayout({
     setOpponentSubmitted,
   } = useBattleArenaStore();
   const router = useRouter();
-  const roomAccessor = new RoomAccessor();
   const { getRoomInfo } = roomAccessor;
 
   useEffect(() => {

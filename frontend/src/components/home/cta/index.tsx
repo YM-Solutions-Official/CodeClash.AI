@@ -1,7 +1,6 @@
 "use client";
 import { motion } from "motion/react";
-import { Button } from "@/components/ui/button";
-import { ArrowRight, GamepadDirectional } from "lucide-react";
+import RoomBtns from "@/components/common/room-btns/RoomBtns";
 
 export default function CTA() {
   return (
@@ -39,30 +38,7 @@ export default function CTA() {
           </p>
 
           {/* CTA */}
-          <div className="flex gap-2 justify-center">
-            <Button variant="hero" size="lg" className="group min-w-45">
-              Create Room
-              <motion.span
-                className="inline-block"
-                initial={{ x: 0 }}
-                whileHover={{ x: 4 }}
-                transition={{ duration: 0.2 }}
-              >
-                <ArrowRight className="h-4 w-4" />
-              </motion.span>
-            </Button>
-            <Button variant="glow" size="lg" className="group min-w-45">
-              Join Room
-              <motion.span
-                className="inline-block"
-                initial={{ x: 0 }}
-                whileHover={{ x: 4 }}
-                transition={{ duration: 0.2 }}
-              >
-                <GamepadDirectional className="h-4 w-4" />
-              </motion.span>
-            </Button>
-          </div>
+          <RoomBtns />
         </motion.div>
       </div>
     </section>

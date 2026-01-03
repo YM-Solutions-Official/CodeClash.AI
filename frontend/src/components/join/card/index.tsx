@@ -1,5 +1,5 @@
 "use client";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import JoinForm from "./form";
 import { Users } from "lucide-react";
 

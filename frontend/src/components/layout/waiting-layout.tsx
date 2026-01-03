@@ -1,7 +1,7 @@
 "use client";
 import { getSocket } from "@/lib/socket";
 import { useWaitingRoomStore } from "@/store/useWaitingRoomStore";
-import { RoomAccessor } from "@/utils/accessors";
+import { roomAccessor } from "@/utils/accessors";
 import { MatchStartedRes } from "@/utils/types/room";
 import { useRouter } from "next/navigation";
 import { ReactNode, useEffect } from "react";
@@ -16,7 +16,6 @@ export default function WaitingLayout({
 }>) {
   const { setRoomInfo, addUser, setIsCreator, setCountdown } =
     useWaitingRoomStore();
-  const roomAccessor = new RoomAccessor();
   const { getRoomInfo } = roomAccessor;
   const router = useRouter();
 

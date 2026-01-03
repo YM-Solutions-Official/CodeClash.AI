@@ -1,11 +1,39 @@
 "use client";
 
-import { motion } from "motion/react";
-import Image from "next/image";
 import { useEffect, useState } from "react";
+import { motion } from "motion/react";
+import { useRouter } from "next/navigation";
+import { useAuthStore } from "@/store/useAuthStore";
+import { authAccessor } from "@/utils/accessors";
+import { Button } from "@/components/ui/button";
+import Logo from "../logo";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Crown, LogOut, User } from "lucide-react";
+
+function getInitials(email?: string, username?: string): string {
+  if (username) {
+    return username.slice(0, 2).toUpperCase();
+  }
+  if (email) {
+    return email.slice(0, 2).toUpperCase();
+  }
+  return "U";
+}
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
+  const router = useRouter();
+
+  const { user, isLoading } = useAuthStore();
+  const isGuest = user?.isGuest;
+  const displayName = user?.username || user?.email || "User";
 
   useEffect(() => {
     const handleScroll = () => {
@@ -15,6 +43,14 @@ export default function Navbar() {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  const handleSignOut = () => {
+    authAccessor.logout();
+  };
+
+  const handleUpgrade = () => {
+    router.push("/auth?mode=upgrade");
+  };
 
   return (
     <motion.nav
@@ -32,22 +68,7 @@ export default function Navbar() {
       <div className="mx-auto max-w-6xl px-6 py-4">
         <div className="flex items-center justify-between">
           {/* Logo */}
-          <motion.a
-            href="/"
-            className="flex items-center gap-1.5 group"
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-          >
-            <Image
-              src="/images/icon-2.png"
-              height={50}
-              width={50}
-              alt="logo-image"
-            />
-            <span className="text-lg font-semibold tracking-tight text-foreground">
-              CodeClash
-            </span>
-          </motion.a>
+          <Logo />
 
           {/* Navigation Links */}
           <div className="hidden md:flex items-center gap-8">
@@ -71,6 +92,103 @@ export default function Navbar() {
               </motion.a>
             ))}
           </div>
+
+          {/* Auth Section */}
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3, duration: 0.4 }}
+          >
+            {isLoading ? (
+              <div className="w-9 h-9 rounded-full bg-muted animate-pulse" />
+            ) : user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="flex items-center gap-2 rounded-full p-0.5 hover:bg-foreground/5 transition-colors focus:outline-none focus:ring-2 focus:ring-accent/50">
+                    <Avatar className="h-9 w-9 border border-border/50">
+                      <AvatarImage src={undefined} />
+                      <AvatarFallback className="bg-linear-to-br from-primary to-accent text-primary-foreground text-xs font-medium">
+                        {isGuest ? "G" : getInitials(user.email, user.username)}
+                      </AvatarFallback>
+                    </Avatar>
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  align="end"
+                  className="w-56 border-border/50"
+                >
+                  <div className="px-3 py-2">
+                    <p className="text-sm font-medium text-foreground">
+                      {isGuest ? "Guest User" : displayName}
+                    </p>
+                    {user.email && (
+                      <p className="text-xs text-muted-foreground truncate">
+                        {user.email}
+                      </p>
+                    )}
+                    {isGuest && (
+                      <p className="text-xs text-muted-foreground">
+                        Playing as guest
+                      </p>
+                    )}
+                  </div>
+                  <DropdownMenuSeparator className="bg-border/50" />
+                  {isGuest ? (
+                    <>
+                      <DropdownMenuItem
+                        onClick={handleUpgrade}
+                        className="cursor-pointer group focus:text-white"
+                      >
+                        <Crown className="mr-2 h-4 w-4 text-accent group-focus:text-white" />
+                        Upgrade to Full Account
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => router.push("/auth?mode=login")}
+                        className="cursor-pointer group focus:text-white"
+                      >
+                        <User className="mr-2 h-4 w-4 group-focus:text-white" />
+                        Sign in
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={handleSignOut}
+                        className="cursor-pointer text-destructive focus:bg-destructive focus:text-white group"
+                      >
+                        <LogOut className="mr-2 h-4 w-4 group-focus:text-white" />
+                        Sign out
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator className="bg-border/50" />
+                    </>
+                  ) : (
+                    <>
+                      <DropdownMenuItem
+                        onClick={() => router.push("/profile")}
+                        className="cursor-pointer"
+                      >
+                        <User className="mr-2 h-4 w-4" />
+                        Profile
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator className="bg-border/50" />
+                      <DropdownMenuItem
+                        onClick={handleSignOut}
+                        className="cursor-pointer text-destructive focus:text-destructive"
+                      >
+                        <LogOut className="mr-2 h-4 w-4" />
+                        Sign out
+                      </DropdownMenuItem>
+                    </>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Button
+                variant="default"
+                size="sm"
+                onClick={() => router.push("/auth")}
+              >
+                Login
+              </Button>
+            )}
+          </motion.div>
         </div>
       </div>
     </motion.nav>

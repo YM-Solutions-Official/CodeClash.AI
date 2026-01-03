@@ -13,11 +13,11 @@ export function findWinner(room: IRoom): string {
     return room.creatorId;
   }
   if (isJoinerSubmitted && !isCreatorSubmitted) {
-    return room.joinedUser!;
+    return room.joinerId;
   }
 
   if (isCreatorSubmitted && isJoinerSubmitted) {
-    return creatorTime! < joinerTime! ? room.creatorId : room.joinedUser!;
+    return creatorTime! < joinerTime! ? room.creatorId : room.joinerId;
   }
 
   return "draw";
